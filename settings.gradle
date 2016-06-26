@@ -1,0 +1,3 @@
+rootProject.name = 'bioinformatics'
+include 'commons'
+include 'week1'
