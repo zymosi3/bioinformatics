@@ -11,9 +11,8 @@ public class PatternCount {
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        String s = scanner.next();
-        Genome genome = new Genome(s);
-        String pattern = scanner.next();
-        System.out.println(genome.count(pattern));
+        Genome genome = new Genome(scanner.next());
+        Genome pattern = new Genome(scanner.next());
+        System.out.println(genome.patternCount.apply(pattern));
     }
 }

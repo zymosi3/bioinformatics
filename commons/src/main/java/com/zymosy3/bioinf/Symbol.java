@@ -1,5 +1,7 @@
 package com.zymosy3.bioinf;
 
+import java.util.stream.Stream;
+
 /**
  * Genome symbol
  */
@@ -48,6 +50,10 @@ public enum Symbol {
                 return T;
         }
         throw new IllegalArgumentException("Unknown name");
+    }
+
+    public static Symbol byName(int name) {
+        return byName((char) name);
     }
 
     public static Symbol byValue(int value) {

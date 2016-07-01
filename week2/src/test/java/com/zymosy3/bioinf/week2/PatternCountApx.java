@@ -1,4 +1,4 @@
-package com.zymosy3.bioinf.week1;
+package com.zymosy3.bioinf.week2;
 
 import com.zymosy3.bioinf.Genome;
 
@@ -7,11 +7,13 @@ import java.util.Scanner;
 /**
  *
  */
-public class PatternToNumber {
+public class PatternCountApx {
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         Genome pattern = new Genome(scanner.next());
-        System.out.println(pattern.toNumber());
+        Genome genome = new Genome(scanner.next());
+        int d = scanner.nextInt();
+        System.out.println(genome.patternCountApx(pattern, d));
     }
 }

@@ -1,3 +1,4 @@
 rootProject.name = 'bioinformatics'
 include 'commons'
 include 'week1'
+include 'week2'

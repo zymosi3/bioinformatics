@@ -1,14 +1,15 @@
 package com.zymosy3.bioinf;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
  *
@@ -18,77 +19,88 @@ public class Genome {
     public final String s;
 
     public Genome(String s) {
-        this.s = s;
+        this.s = Objects.requireNonNull(s);
     }
 
-    //    Genome(Text, Pattern)
-//    count ← 0
-//            for i ← 0 to |Text| − |Pattern|
-//            if Text(i, |Pattern|) = Pattern
-//    count ← count + 1
-//            return count
-    public int count(String pattern) {
-        return IntStream.range(0, s.length() - pattern.length() + 1).
-                map(i -> s.substring(i, i + pattern.length()).equals(pattern) ? 1 : 0).
-                sum();
+    public final Function<Genome, Integer> patternCount = new PatternCount().apply(this);
+
+    public final Function<Genome, Function<Integer, Integer>> patternCountApx = new PatternCountApx().apply(this);
+
+    public final Supplier<int[]> skew = () -> new Skew().apply(this);
+
+    public final Supplier<int[]> minimumSkew = () -> new MinimumSkew().apply(this);
+
+    public final Function<Genome, Integer> hammingDistance = new HammingDistance().apply(this);
+
+    public final Function<Genome, Function<Integer, int[]>> patternMatchingApx =
+            new PatternMatchingApx().apply(this);
+
+    public final Function<Integer, Set<Genome>> frequentWordsBySorting = new FrequentWordsBySorting().apply(this);
+
+    public final Function<Integer, Set<Genome>> neighbors = new Neighbors().apply(this);
+
+    public Stream<Symbol> stream() {
+        return s.chars().mapToObj(Symbol::byName);
     }
 
-    //    FrequentWords(Text, k)
-//        FrequentPatterns ← an empty set
-//        for i ← 0 to |Text| − k
-//            Pattern ← the k-mer Text(i, k)
-//            Count(i) ← Genome(Text, Pattern)
-//        maxCount ← maximum value in array Count
-//        for i ← 0 to |Text| − k
-//            if Count(i) = maxCount
-//                add Text(i, k) to FrequentPatterns
-//        remove duplicates from FrequentPatterns
-//        return FrequentPatterns
-    public Set<String> frequentWords(int k) {
-        int[] count = count(k);
-        int max = IntStream.of(count).max().orElse(Integer.MIN_VALUE);
-        return IntStream.range(0, count.length - k + 1).
-                filter(i -> count[i] == max).
-                mapToObj(i -> s.substring(i, i + k)).
-                collect(Collectors.toSet());
+    public int size() {
+        return s.length();
     }
 
-    //    FasterFrequentWords(Text , k)
-//        FrequentPatterns ← an empty set
-//        FrequencyArray ← ComputingFrequencies(Text, k)
-//        maxCount ← maximal value in FrequencyArray
-//        for i ←0 to 4k − 1
-//            if FrequencyArray(i) = maxCount
-//                Pattern ← NumberToPattern(i, k)
-//                add Pattern to the set FrequentPatterns
-//        return FrequentPatterns
-    public Set<String> fasterFrequentWords(int k) {
-        int[] frequencyArray = computingFrequencies(k);
-        int max = IntStream.of(frequencyArray).max().orElse(Integer.MIN_VALUE);
-        return IntStream.range(0, frequencyArray.length).
-                filter(i -> frequencyArray[i] == max).
-                mapToObj(i -> numberToPattern(i, k)).
-                collect(Collectors.toSet());
+    public Symbol at(int i) {
+        return Symbol.byName(s.charAt(i));
     }
 
-    //    FindingFrequentWordsBySorting(Text , k)
-//        FrequentPatterns ← an empty set
-//        for i ← 0 to |Text| − k
-//            Pattern ← Text(i, k)
-//            Index(i) ← PatternToNumber(Pattern)
-//            Count(i) ← 1
-//        SortedIndex ← Sort(Index)
-//        for i ← 1 to |Text| − k
-//            if SortedIndex(i) = SortedIndex(i − 1)
-//                Count(i) = Count(i − 1) + 1
-//        maxCount ← maximum value in the array Count
-//        for i ← 0 to |Text| − k
-//            if Count(i) = maxCount
-//                Pattern ← NumberToPattern(SortedIndex(i), k)
-//                add Pattern to the set FrequentPatterns
-//        return FrequentPatterns
-    public Collection<String> findingFrequentWordsBySorting(int k) {
-        return null;
+    public Symbol first() {
+        return at(0);
+    }
+
+    public Symbol last() {
+        return at(size() - 1);
+    }
+
+    public Genome chunk(int i, int len) {
+        return new Genome(s.substring(i, i + len));
+    }
+
+    public Genome suffix() {
+        return chunk(1, size() - 1);
+    }
+
+    public Genome addFirst(Symbol s) {
+        return new Genome(s.name() + this.s);
+    }
+
+    public int hammingDistance(Genome g) {
+        return hammingDistance.apply(g);
+    }
+
+    public int[] patternMatchingApx(Genome pattern, int d) {
+        return patternMatchingApx.apply(pattern).apply(d);
+    }
+
+    public int patternCount(Genome pattern) {
+        return patternCount.apply(pattern);
+    }
+
+    public int patternCount(String pattern) {
+        return patternCount(new Genome(pattern));
+    }
+
+    public int patternCountApx(Genome pattern, int d) {
+        return patternCountApx.apply(pattern).apply(d);
+    }
+
+    public int patternCountApx(String pattern, int d) {
+        return patternCountApx(new Genome(pattern), d);
+    }
+
+    public Set<Genome> neighbors(int d) {
+        return neighbors.apply(d);
+    }
+
+    public Set<Genome> frequentWords(int k) {
+        return frequentWordsBySorting.apply(k);
     }
 
     //    ComputingFrequencies(Text , k)
@@ -102,8 +114,8 @@ public class Genome {
     public int[] computingFrequencies(int k) {
         int[] frequencies = new int[(int) Math.pow(4, k)];
         IntStream.range(0, s.length() - k + 1).
-                mapToObj(i -> s.substring(i, i + k)).
-                map(Genome::patternToNumber).
+                mapToObj(i -> chunk(i, k)).
+                map(Genome::toNumber).
                 forEach(j -> frequencies[j.intValue()]++);
         return frequencies;
     }
@@ -111,8 +123,8 @@ public class Genome {
     public Map<Long, Integer> computingFrequenciesMap(int k) {
         Map<Long, Integer> frequencies = new HashMap<>(s.length() - k + 1);
         IntStream.range(0, s.length() - k + 1).
-                mapToObj(i -> s.substring(i, i + k)).
-                map(Genome::patternToNumber).
+                mapToObj(i -> chunk(i, k)).
+                map(Genome::toNumber).
                 forEach(number -> {
                     Integer count = frequencies.get(number);
                     frequencies.put(number, count == null ? 1 : (count + 1));
@@ -121,10 +133,12 @@ public class Genome {
     }
 
     public int[] count(int k) {
-        int[] count = new int[s.length() - k];
-        IntStream.range(0, count.length - k + 1).
-                forEach(i -> count[i] = count(s.substring(i, i + k)));
-        return count;
+        return IntStream.range(0, s.length() - k + 1).
+                mapToObj(i -> s.substring(i, i + k)).
+                map(Genome::new).
+                map(patternCount).
+                mapToInt(i -> i).
+                toArray();
     }
 
     public String complementary() {
@@ -155,31 +169,6 @@ public class Genome {
                 reduce(new HashSet<>(), (res, fromWindow) -> { res.addAll(fromWindow); return res; });
     }
 
-    public Set<String> fasterClumps(int k, int l, int t) {
-        AtomicBoolean initFrequencies = new AtomicBoolean();
-        AtomicReference<int[]> computingFrequencies = new AtomicReference<>();
-        return IntStream.range(0, s.length() - l + 1).// now we can't parallel this
-                mapToObj(i -> {
-            Genome genome = new Genome(s.substring(i, i + l));
-            if (!initFrequencies.get()) {
-                computingFrequencies.set(genome.computingFrequencies(k));
-                initFrequencies.set(true);
-            } else {
-                int removed = (int) patternToNumber(s.substring(i - 1, i + k - 1));
-                computingFrequencies.get()[removed]--;
-                int added = (int) patternToNumber(s.substring(i + l - k, i + l));
-                computingFrequencies.get()[added]++;
-            }
-            return computingFrequencies.get();
-        }).
-                map(frequencies -> IntStream.range(0, frequencies.length).
-                        filter(i -> frequencies[i] >= t).
-                        mapToObj(i -> numberToPattern(i, k)).
-                        collect(Collectors.toSet())
-                ).
-                reduce(new HashSet<>(), (res, fromWindow) -> { res.addAll(fromWindow); return res; });
-    }
-
     public Set<String> fasterClumpsOnMaps(int k, int l, int t) {
         Map<Long, Integer> computingFrequencies = new HashMap<>();
         return IntStream.range(0, s.length() - l + 1).// now we can't parallel this
@@ -188,14 +177,14 @@ public class Genome {
             if (computingFrequencies.isEmpty()) {
                 computingFrequencies.putAll(genome.computingFrequenciesMap(k));
             } else {
-                long removed = patternToNumber(s.substring(i - 1, i + k - 1));
+                long removed = chunk(i - 1, k).toNumber();
                 int removedCount = computingFrequencies.get(removed);
                 if (removedCount == 1) {
                     computingFrequencies.remove(removed);
                 } else {
                     computingFrequencies.put(removed, removedCount - 1);
                 }
-                long added = patternToNumber(s.substring(i + l - k, i + l));
+                long added = chunk(i + l - k, k).toNumber();
                 Integer addedCount = computingFrequencies.get(added);
                 computingFrequencies.put(added, addedCount == null ? 1 : (addedCount + 1));
             }
@@ -210,21 +199,20 @@ public class Genome {
     }
 
     //    PatternToNumber(Pattern)
-//        if Pattern contains no symbols
-//            return 0
-//        symbol ← LastSymbol(Pattern)
-//        Prefix ← Prefix(Pattern)
-//        return 4 · PatternToNumber(Prefix) + SymbolToNumber(symbol)
-    public static long patternToNumber(String pattern) {
-        if (pattern.length() == 0) {
-            throw new IllegalArgumentException("Empty pattern");
+    //        if Pattern contains no symbols
+    //            return 0
+    //        symbol ← LastSymbol(Pattern)
+    //        Prefix ← Prefix(Pattern)
+    //        return 4 · PatternToNumber(Prefix) + SymbolToNumber(symbol)
+    public long toNumber() {
+        switch (size()) {
+            case 0:
+                return 0;
+            case 1:
+                return last().value;
+            default:
+                return last().value + 4 * chunk(0, size() - 1).toNumber();
         }
-
-        Symbol lastSymbol = Symbol.byName(pattern.charAt(pattern.length() - 1));
-        if (pattern.length() == 1) {
-            return lastSymbol.value;
-        }
-        return 4 * patternToNumber(pattern.substring(0, pattern.length() - 1)) + lastSymbol.value;
     }
 
     public static String numberToPattern(long number, int k) {
@@ -235,6 +223,22 @@ public class Genome {
         int reminder = (int) number % 4;
         Symbol symbol = Symbol.byValue(reminder);
         return numberToPattern(prefixNumber, k - 1) + symbol.name();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Genome genome = (Genome) o;
+
+        return s.equals(genome.s);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return s.hashCode();
     }
 
     @Override
