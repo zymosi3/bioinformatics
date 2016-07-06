@@ -1,5 +1,7 @@
 package com.zymosi3.bioinf;
 
+import java.util.stream.Stream;
+
 /**
  * Genome symbol
  */
@@ -66,5 +68,9 @@ public enum Nucleotide {
                 return T;
         }
         throw new IllegalArgumentException("Unknown value");
+    }
+
+    public static Stream<Nucleotide> stream() {
+        return Stream.of(values());
     }
 }

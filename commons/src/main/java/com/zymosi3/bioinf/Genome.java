@@ -3,6 +3,7 @@ package com.zymosi3.bioinf;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -348,6 +349,23 @@ public class Genome {
 
     public Set<Genome> clumpsWithMismatchesAndReverse(int k, int l, int t, int d) {
         return new ClumpsWithMismatchesAndReverse().apply(this).apply(k).apply(l).apply(t).apply(d);
+    }
+
+    public Genome mostProbableKmer(Map<Nucleotide, List<Double>> profile, int k) {
+        return kmerStream(k).
+                map(kmer -> new Object[]{kmer, kmer.probability(profile)}).
+                max((o1, o2) -> (int) Math.signum(((double) o1[1]) - ((double) o2[1]))).
+                map(a -> (Genome) a[0]).
+                orElse(null);
+
+    }
+
+    public double probability(Map<Nucleotide, List<Double>> profile) {
+        return IntStream.range(0, size()).
+                mapToObj(i -> new Object[]{i, at(i)}).
+                map(a -> profile.get(a[1]).get((int) a[0])).
+                mapToDouble(d -> d).
+                sum();
     }
 
     //    PatternToNumber(Pattern)

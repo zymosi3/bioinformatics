@@ -3,9 +3,12 @@ package com.zymosi3.bioinf;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -13,14 +16,14 @@ import java.util.stream.Stream;
  */
 public class Dna {
 
-    private final Collection<Genome> genomes;
+    private final List<Genome> genomes;
 
     public Dna(Genome... genomes) {
         this.genomes = Stream.of(genomes).collect(Collectors.toList());
     }
 
     public Dna(Collection<Genome> genomes) {
-        this.genomes = Collections.unmodifiableCollection(new ArrayList<>(genomes));
+        this.genomes = Collections.unmodifiableList(new ArrayList<>(genomes));
     }
 
     public Stream<Genome> stream() {
@@ -70,5 +73,25 @@ public class Dna {
                 min((o1, o2) -> ((Integer) o1[1]) - ((Integer) o2[1])).
                 map(o -> (Genome) o[0]).
                 orElse(null);
+    }
+
+    public Map<Nucleotide, List<Double>> profile(int k) {
+        return IntStream.range(0, k).
+                mapToObj(i -> genomes.stream().map(g -> g.at(i))).
+                map(col -> col.collect(Collectors.toMap(
+                        n -> n,
+                        n -> 1.0,
+                        (d1, d2) -> d1 + d2,
+                        () -> Nucleotide.stream().collect(Collectors.toMap(n -> n, n -> 0.0))
+                ))).
+                map(m -> Nucleotide.stream().collect(Collectors.toMap(n -> n, n -> m.get(n) / genomes.size()))).
+                reduce(
+                        Nucleotide.stream().collect(Collectors.toMap(n -> n, n -> new ArrayList<Double>())),
+                        (r, m) -> {
+                            Nucleotide.stream().forEach(n -> r.get(n).add(m.get(n)));
+                            return r;
+                        },
+                        (m1, m2) -> m2
+                );
     }
 }
