@@ -13,9 +13,7 @@ public class MinimumSkew {
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        StringBuilder sb = new StringBuilder();
-        while (scanner.hasNext()) sb.append(scanner.next());
-        Genome genome = new Genome(sb.toString());
+        Genome genome = new Genome(scanner.next());
         System.out.println(
                 IntStream.of(genome.minimumSkew()).
                         mapToObj(String::valueOf).

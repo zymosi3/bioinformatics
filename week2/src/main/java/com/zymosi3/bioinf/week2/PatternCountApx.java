@@ -11,8 +11,8 @@ public class PatternCountApx {
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        Genome pattern = new Genome(scanner.next());
-        Genome genome = new Genome(scanner.next());
+        Genome pattern = new Genome(scanner.next().toLowerCase());
+        Genome genome = new Genome(scanner.next().toLowerCase());
         int d = scanner.nextInt();
         System.out.println(genome.patternCountApx(pattern, d));
     }

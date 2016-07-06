@@ -180,6 +180,12 @@ public class Genome {
                 mapToObj(i -> chunk(i, k));
     }
 
+    public static Stream<Genome> allKmerStream(int k) {
+        return IntStream.range(0, (int) Math.pow(4, k)).
+                mapToObj(i -> numberToPattern(i, k)).
+                map(Genome::new);
+    }
+
     public int size() {
         return s.length();
     }
