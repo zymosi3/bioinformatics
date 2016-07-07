@@ -4,6 +4,7 @@ import com.zymosi3.bioinf.Genome;
 import com.zymosi3.bioinf.Nucleotide;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
@@ -25,7 +26,7 @@ public class MostProbableKmer {
         String profileStr = IntStream.range(0, 4).
                 mapToObj(i -> IntStream.range(0, k).mapToObj(j -> scanner.next()).collect(Collectors.joining(" "))).
                 collect(Collectors.joining("\n"));
-        Map<Nucleotide, double[]> profile = toProfile(profileStr);
+        Map<Nucleotide, List<Double>> profile = toProfile(profileStr);
         System.out.println(genome.mostProbableKmer(profile, k));
     }
 }

@@ -21,6 +21,10 @@ public class Util {
         return Stream.of(s.split(" ")).map(Genome::new).collect(Collectors.toSet());
     }
 
+    public static List<Genome> toList(String s) {
+        return Stream.of(s.split(" ")).map(Genome::new).collect(Collectors.toList());
+    }
+
     public static <T> String toString(Collection<T> objects) {
         return objects.stream().map(Object::toString).collect(Collectors.joining(" "));
     }
