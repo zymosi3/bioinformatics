@@ -1,15 +1,10 @@
 package com.zymosi3.bioinf;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -39,6 +34,10 @@ public class Dna {
 
     public Genome at(int i) {
         return genomes.get(i);
+    }
+
+    public Dna add(Genome g) {
+        return new Dna(Stream.concat(stream(), Stream.of(g)).collect(Collectors.toList()));
     }
 
     //    MotifEnumeration(Dna, k, d)
@@ -136,26 +135,20 @@ public class Dna {
     //                BestMotifs ← Motifs
     //        return BestMotifs
     public Dna greedyMotifSearch(int k) {
-        AtomicReference<Dna> bestMotifs = new AtomicReference<>(new Dna(stream().map(g -> g.chunk(0, k)).collect(Collectors.toList())));
-        AtomicReference<Double> bestScore = new AtomicReference<>(bestMotifs.get().score(k));
-        genomes.get(0).kmerStream(k).
-                map(motif1 -> {
-                    List<Genome> genomes = new ArrayList<>();
-                    genomes.add(motif1);
-                    for (int i = 1; i < size(); i++) {
-                        Genome next = at(i).mostProbableKmer(new Dna(genomes).profile(k), k);
-                        genomes.add(next);
-                    }
-                    return new Dna(genomes);
-                }).
-                forEach(dna -> {
-                    double score = dna.score(k);
-                    if (score < bestScore.get()) {
-                        bestMotifs.set(dna);
-                        bestScore.set(score);
-                    }
-                });
-        return bestMotifs.get();
+        return Stream.concat(
+                Stream.of(new Dna(stream().map(g -> g.chunk(0, k)).collect(Collectors.toList()))),
+                genomes.get(0).kmerStream(k).
+                        map(motif1 ->
+                                Stream.iterate(new Dna(motif1), dna -> dna.add(at(dna.size()).mostProbableKmer(dna.profile(k), k))).
+                                        limit(size()).
+                                        reduce((d1, d2) -> d2).
+                                        orElse(null)
+                        )
+                ).
+                map(dna -> new Object[]{dna, dna.score(k)}).
+                reduce((o1, o2) -> (((double) o2[1]) < ((double) o1[1])) ? o2 : o1).
+                map(a -> (Dna) a[0]).
+                orElse(null);
     }
 
     @Override
