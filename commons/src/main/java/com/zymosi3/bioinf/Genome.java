@@ -352,18 +352,6 @@ public class Genome {
     }
 
     public Genome mostProbableKmer(Map<Nucleotide, List<Double>> profile, int k) {
-//        List<Genome> kmers = kmerStream(k).collect(Collectors.toList());
-//        Genome mostProbable = kmers.get(0);
-//        double mostProbability = mostProbable.probability(profile);
-//        for (int i = 1; i < kmers.size(); i++) {
-//            double probability = kmers.get(i).probability(profile);
-//            if (probability > mostProbability) {
-//                mostProbability = probability;
-//                mostProbable = kmers.get(i);
-//            }
-//        }
-//        return mostProbable;
-
         return kmerStream(k).
                 map(kmer -> new Object[]{kmer, kmer.probability(profile)}).
                 reduce((o1, o2) -> (((double) o1[1]) < ((double) o2[1])) ? o2 : o1).

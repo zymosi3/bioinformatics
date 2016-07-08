@@ -92,9 +92,9 @@ public class Dna {
                         n -> n,
                         n -> 1.0,
                         (d1, d2) -> d1 + d2,
-                        () -> Nucleotide.stream().collect(Collectors.toMap(n -> n, n -> 0.0))
+                        () -> Nucleotide.stream().collect(Collectors.toMap(n -> n, n -> 1.0))
                 ))).
-                map(m -> Nucleotide.stream().collect(Collectors.toMap(n -> n, n -> m.get(n) / genomes.size()))).
+                map(m -> Nucleotide.stream().collect(Collectors.toMap(n -> n, n -> m.get(n) / (genomes.size() + 4)))).
                 reduce(
                         Nucleotide.stream().collect(Collectors.toMap(n -> n, n -> new ArrayList<Double>())),
                         (r, m) -> {

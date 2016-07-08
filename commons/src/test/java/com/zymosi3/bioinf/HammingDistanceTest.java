@@ -2,6 +2,7 @@ package com.zymosi3.bioinf;
 
 import org.junit.Test;
 
+import static com.zymosi3.bioinf.Util.toList;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -20,5 +21,14 @@ public class HammingDistanceTest {
                 hammingDistance(new Genome("AATAGCAGCTTCTCAACTGGTTACCTCGTATGAGTAAATTAGGTCATTATTGACTCAGGTCACTAACGTCT")));
         assertEquals(28, new Genome("AGAAACAGACCGCTATGTTCAACGATTTGTTTTATCTCGTCACCGGGATATTGCGGCCACTCATCGGTCAGTTGATTACGCAGGGCGTAAATCGCCAGAATCAGGCTG").
                 hammingDistance(new Genome("AGAAACCCACCGCTAAAAACAACGATTTGCGTAGTCAGGTCACCGGGATATTGCGGCCACTAAGGCCTTGGATGATTACGCAGAACGTATTGACCCAGAATCAGGCTC")));
+    }
+
+    @Test
+    public void testDistance() {
+        assertEquals(5, new Dna(toList("TTACCTTAAC GATATCTGTC ACGGCGTTCG CCCTAAAGAG CGTCAGAGGT")).distance(new Genome("AAA")));
+        assertEquals(3, new Dna(toList("TTTATTT CCTACAC GGTAGAG")).distance(new Genome("TAA")));
+        assertEquals(0, new Dna(toList("AAACT AAAC AAAG")).distance(new Genome("AAA")));
+        assertEquals(0, new Dna(toList("TTTTAAA CCCCAAA GGGGAAA")).distance(new Genome("AAA")));
+        assertEquals(0, new Dna(toList("AAATTTT AAACCCC AAAGGGG")).distance(new Genome("AAA")));
     }
 }

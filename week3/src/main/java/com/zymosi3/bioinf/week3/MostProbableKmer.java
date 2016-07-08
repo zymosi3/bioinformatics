@@ -22,7 +22,6 @@ public class MostProbableKmer {
         Scanner scanner = new Scanner(System.in);
         Genome genome = new Genome(scanner.next());
         int k = scanner.nextInt();
-        Set<String> rows = new HashSet<>();
         String profileStr = IntStream.range(0, 4).
                 mapToObj(i -> IntStream.range(0, k).mapToObj(j -> scanner.next()).collect(Collectors.joining(" "))).
                 collect(Collectors.joining("\n"));
