@@ -26,7 +26,7 @@ public class ClumpsWithMismatchesAndReverse implements
     public Function<Integer, Function<Integer, Function<Integer, Function<Integer, Set<Genome>>>>> apply(Genome g) {
         return k -> l -> t -> d ->
             IntStream.range(0, g.size() - l + 1).
-                    mapToObj(i -> g.chunk(i, l)).
+                    mapToObj(i -> g.kmer(i, l)).
                     map(chunk -> {
                         List<Genome> neighborhoods = chunk.kmerStream(k).
                                 flatMap(pattern -> Stream.of(pattern, pattern.complementary())).

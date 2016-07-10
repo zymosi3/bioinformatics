@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -26,6 +27,10 @@ public class Dna {
 
     public Stream<Genome> stream() {
         return genomes.stream();
+    }
+
+    public Stream<Genome> randomMotifs(Random r, int k) {
+        return stream().map(g -> g.randomKmer(r, k));
     }
 
     public int size() {
@@ -136,7 +141,7 @@ public class Dna {
     //        return BestMotifs
     public Dna greedyMotifSearch(int k) {
         return Stream.concat(
-                Stream.of(new Dna(stream().map(g -> g.chunk(0, k)).collect(Collectors.toList()))),
+                Stream.of(new Dna(stream().map(g -> g.kmer(0, k)).collect(Collectors.toList()))),
                 genomes.get(0).kmerStream(k).
                         map(motif1 ->
                                 Stream.iterate(new Dna(motif1), dna -> dna.add(at(dna.size()).mostProbableKmer(dna.profile(k), k))).
@@ -149,6 +154,33 @@ public class Dna {
                 reduce((o1, o2) -> (((double) o2[1]) < ((double) o1[1])) ? o2 : o1).
                 map(a -> (Dna) a[0]).
                 orElse(null);
+    }
+
+    //    RandomizedMotifSearch(Dna, k, t)
+    //        randomly select k-mers Motifs = (Motif1, …, Motift) in each string from Dna
+    //        BestMotifs ← Motifs
+    //        while forever
+    //            Profile ← Profile(Motifs)
+    //            Motifs ← Motifs(Profile, Dna)
+    //            if Score(Motifs) < Score(BestMotifs)
+    //                BestMotifs ← Motifs
+    //            else
+    //                return BestMotifs
+    public Dna randomizedMotifSearch(Random r, int k) {
+        Dna bestMotifs = new Dna(randomMotifs(r, k).collect(Collectors.toList()));
+        double bestScore = bestMotifs.score(k);
+        Dna motifs = bestMotifs;
+        while (true) {
+            Map<Nucleotide, List<Double>> profile = motifs.profile(k);
+            motifs = new Dna(stream().map(g -> g.mostProbableKmer(profile, k)).collect(Collectors.toList()));
+            double score = motifs.score(k);
+            if (score < bestScore) {
+                bestMotifs = motifs;
+                bestScore = score;
+            } else {
+                return bestMotifs;
+            }
+        }
     }
 
     @Override

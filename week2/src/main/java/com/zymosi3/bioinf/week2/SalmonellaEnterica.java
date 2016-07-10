@@ -24,28 +24,28 @@ public class SalmonellaEnterica {
         int k = 9;
         int d = 1;
         System.out.println("d = 1");
-        Genome windowAround = genome.chunk(MINIMUM_SKEW - 250, 500);
+        Genome windowAround = genome.kmer(MINIMUM_SKEW - 250, 500);
         System.out.println("around minimum skew: " + Util.toString(windowAround.frequentWordsWithMismatchesAndReverse(k, d)));
-        Genome windowLeft = genome.chunk(MINIMUM_SKEW - 500, 500);
+        Genome windowLeft = genome.kmer(MINIMUM_SKEW - 500, 500);
         System.out.println("left of minimum skew: " + Util.toString(windowLeft.frequentWordsWithMismatchesAndReverse(k, d)));
-        Genome windowRight = genome.chunk(MINIMUM_SKEW, 500);
+        Genome windowRight = genome.kmer(MINIMUM_SKEW, 500);
         System.out.println("right of minimum skew: " + Util.toString(windowRight.frequentWordsWithMismatchesAndReverse(k, d)));
 
         System.out.println("trying to find clumps around minimum skew");
-        Genome toFindClumps = genome.chunk(MINIMUM_SKEW - 500, 1000);
+        Genome toFindClumps = genome.kmer(MINIMUM_SKEW - 500, 1000);
         System.out.println("clumps: " + toFindClumps.clumpsWithMismatchesAndReverse(k, 500, 3, d));
 
         d = 2;
         System.out.println("d = 2");
-        windowAround = genome.chunk(MINIMUM_SKEW - 250, 500);
+        windowAround = genome.kmer(MINIMUM_SKEW - 250, 500);
         System.out.println("around minimum skew: " + Util.toString(windowAround.frequentWordsWithMismatchesAndReverse(k, d)));
-        windowLeft = genome.chunk(MINIMUM_SKEW - 500, 500);
+        windowLeft = genome.kmer(MINIMUM_SKEW - 500, 500);
         System.out.println("left of minimum skew: " + Util.toString(windowLeft.frequentWordsWithMismatchesAndReverse(k, d)));
-        windowRight = genome.chunk(MINIMUM_SKEW, 500);
+        windowRight = genome.kmer(MINIMUM_SKEW, 500);
         System.out.println("right of minimum skew: " + Util.toString(windowRight.frequentWordsWithMismatchesAndReverse(k, d)));
 
         System.out.println("trying to find clumps around minimum skew");
-        toFindClumps = genome.chunk(MINIMUM_SKEW - 500, 1000);
+        toFindClumps = genome.kmer(MINIMUM_SKEW - 500, 1000);
         System.out.println("clumps: " + toFindClumps.clumpsWithMismatchesAndReverse(k, 500, 3, d));
 
         System.out.println("fin, time = " + (System.currentTimeMillis() - startTime) + " ms");

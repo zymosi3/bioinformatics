@@ -3,12 +3,12 @@ package com.zymosi3.bioinf;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Random;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -59,12 +59,12 @@ public class Genome {
 
     public static final Function<Genome, Function<Genome, Function<Integer, int[]>>> patternMatchingApx =
             g -> p -> d -> IntStream.range(0, g.size() - p.size() + 1).
-                    filter(i -> g.chunk(i, p.size()).hammingDistance(p) <= d).
+                    filter(i -> g.kmer(i, p.size()).hammingDistance(p) <= d).
                     toArray();
 
     public static final Function<Genome, Function<Genome, Integer>> patternCount = g -> p ->
             IntStream.range(0, g.size() - p.size() + 1).
-                    map(i -> g.chunk(i, p.size()).equals(p) ? 1 : 0).
+                    map(i -> g.kmer(i, p.size()).equals(p) ? 1 : 0).
                     sum();;
 
     public static final Function<Genome, Function<Genome, Function<Integer, Integer>>> patternCountApx =
@@ -178,7 +178,7 @@ public class Genome {
 
     public Stream<Genome> kmerStream(int k) {
         return IntStream.range(0, s.length() - k + 1).
-                mapToObj(i -> chunk(i, k));
+                mapToObj(i -> kmer(i, k));
     }
 
     public static Stream<Genome> allKmerStream(int k) {
@@ -203,12 +203,16 @@ public class Genome {
         return at(size() - 1);
     }
 
-    public Genome chunk(int i, int len) {
-        return new Genome(s.substring(i, i + len));
+    public Genome kmer(int i, int k) {
+        return new Genome(s.substring(i, i + k));
+    }
+
+    public Genome randomKmer(Random r, int k) {
+        return kmer(r.nextInt(s.length() - k), k);
     }
 
     public Genome suffix() {
-        return chunk(1, size() - 1);
+        return kmer(1, size() - 1);
     }
 
     public Genome addFirst(Nucleotide s) {
@@ -326,14 +330,14 @@ public class Genome {
             if (computingFrequencies.isEmpty()) {
                 computingFrequencies.putAll(genome.computingFrequenciesMap(k));
             } else {
-                long removed = chunk(i - 1, k).toNumber();
+                long removed = kmer(i - 1, k).toNumber();
                 int removedCount = computingFrequencies.get(removed);
                 if (removedCount == 1) {
                     computingFrequencies.remove(removed);
                 } else {
                     computingFrequencies.put(removed, removedCount - 1);
                 }
-                long added = chunk(i + l - k, k).toNumber();
+                long added = kmer(i + l - k, k).toNumber();
                 Integer addedCount = computingFrequencies.get(added);
                 computingFrequencies.put(added, addedCount == null ? 1 : (addedCount + 1));
             }
@@ -380,7 +384,7 @@ public class Genome {
             case 1:
                 return last().value;
             default:
-                return last().value + 4 * chunk(0, size() - 1).toNumber();
+                return last().value + 4 * kmer(0, size() - 1).toNumber();
         }
     }
 

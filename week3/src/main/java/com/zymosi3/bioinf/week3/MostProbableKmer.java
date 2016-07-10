@@ -3,11 +3,9 @@ package com.zymosi3.bioinf.week3;
 import com.zymosi3.bioinf.Genome;
 import com.zymosi3.bioinf.Nucleotide;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 

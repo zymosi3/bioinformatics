@@ -5,7 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -41,5 +43,14 @@ public class Util {
                         Nucleotide::byValue,
                         i -> Stream.of(rows[i].split(" ")).map(Double::valueOf).collect(Collectors.toList())
                 ));
+    }
+
+    public static <T> T iterateToMin(int n, Supplier<T> s, Function<T, Double> t) {
+        return IntStream.range(0, n).
+                mapToObj(i -> s.get()).
+                map(o -> new Object[]{o, t.apply(o)}).
+                reduce((a1, a2) -> (((double) a1[1]) < ((double) a2[1])) ? a1 : a2).
+                map(a -> (T) a[0]).
+                orElse(null);
     }
 }
