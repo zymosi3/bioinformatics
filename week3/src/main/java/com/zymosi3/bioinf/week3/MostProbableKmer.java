@@ -23,7 +23,7 @@ public class MostProbableKmer {
         String profileStr = IntStream.range(0, 4).
                 mapToObj(i -> IntStream.range(0, k).mapToObj(j -> scanner.next()).collect(Collectors.joining(" "))).
                 collect(Collectors.joining("\n"));
-        Map<Nucleotide, List<Double>> profile = toProfile(profileStr);
+        Map<Nucleotide, List<Float>> profile = toProfile(profileStr);
         System.out.println(genome.mostProbableKmer(profile, k));
     }
 }

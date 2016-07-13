@@ -90,7 +90,7 @@ public class Dna {
                 orElse(null);
     }
 
-    public Map<Nucleotide, List<Double>> profile(int k) {
+    public Map<Nucleotide, List<Float>> profile(int k) {
         return IntStream.range(0, k).
                 mapToObj(i -> genomes.stream().map(g -> g.at(i))).
                 map(col -> col.collect(Collectors.toMap(
@@ -101,9 +101,9 @@ public class Dna {
                 ))).
                 map(m -> Nucleotide.stream().collect(Collectors.toMap(n -> n, n -> m.get(n) / (genomes.size() + 4)))).
                 reduce(
-                        Nucleotide.stream().collect(Collectors.toMap(n -> n, n -> new ArrayList<Double>())),
+                        Nucleotide.stream().collect(Collectors.toMap(n -> n, n -> new ArrayList<Float>())),
                         (r, m) -> {
-                            Nucleotide.stream().forEach(n -> r.get(n).add(m.get(n)));
+                            Nucleotide.stream().forEach(n -> r.get(n).add(m.get(n).floatValue()));
                             return r;
                         },
                         (m1, m2) -> m2
@@ -111,12 +111,12 @@ public class Dna {
     }
 
     public Genome consensus(int k) {
-        Map<Nucleotide, List<Double>> profile = profile(k);
+        Map<Nucleotide, List<Float>> profile = profile(k);
         return new Genome(IntStream.range(0, k).
                 mapToObj(i ->
                         Nucleotide.stream().
                                 map(n -> new Object[]{n, profile.get(n).get(i)}).
-                                max((o1, o2) -> Double.compare((double) o1[1], (double) o2[1])).
+                                max((o1, o2) -> Float.compare((float) o1[1], (float) o2[1])).
                                 map(a -> (Nucleotide) a[0]).
                                 orElse(null)
                 ).
@@ -124,7 +124,7 @@ public class Dna {
                 collect(Collectors.joining()));
     }
 
-    public double score(int k) {
+    public float score(int k) {
         return distance(consensus(k));
     }
 
@@ -151,7 +151,7 @@ public class Dna {
                         )
                 ).
                 map(dna -> new Object[]{dna, dna.score(k)}).
-                reduce((o1, o2) -> (((double) o2[1]) < ((double) o1[1])) ? o2 : o1).
+                reduce((o1, o2) -> (((float) o2[1]) < ((float) o1[1])) ? o2 : o1).
                 map(a -> (Dna) a[0]).
                 orElse(null);
     }
@@ -168,12 +168,12 @@ public class Dna {
     //                return BestMotifs
     public Dna randomizedMotifSearch(Random r, int k) {
         Dna bestMotifs = new Dna(randomMotifs(r, k).collect(Collectors.toList()));
-        double bestScore = bestMotifs.score(k);
+        float bestScore = bestMotifs.score(k);
         Dna motifs = bestMotifs;
         while (true) {
-            Map<Nucleotide, List<Double>> profile = motifs.profile(k);
+            Map<Nucleotide, List<Float>> profile = motifs.profile(k);
             motifs = new Dna(stream().map(g -> g.mostProbableKmer(profile, k)).collect(Collectors.toList()));
-            double score = motifs.score(k);
+            float score = motifs.score(k);
             if (score < bestScore) {
                 bestMotifs = motifs;
                 bestScore = score;
@@ -181,6 +181,35 @@ public class Dna {
                 return bestMotifs;
             }
         }
+    }
+
+    //    GibbsSampler(Dna, k, t, N)
+    //        randomly select k-mers Motifs = (Motif1, …, Motift) in each string from Dna
+    //        BestMotifs ← Motifs
+    //        for j ← 1 to N
+    //            i ← Random(t)
+    //            Profile ← profile matrix constructed from all strings in Motifs except for Motifi
+    //            Motifi ← Profile-randomly generated k-mer in the i-th sequence
+    //            if Score(Motifs) < Score(BestMotifs)
+    //                BestMotifs ← Motifs
+    //        return BestMotifs
+    public Dna gibbsSampler(Random r, int k, int n) {
+        List<Genome> motifs = randomMotifs(r, k).collect(Collectors.toList());
+        List<Genome> bestMotifs = new ArrayList<>(motifs);
+        float bestScore = new Dna(bestMotifs).score(k);
+        for (int j = 0; j < n; j++) {
+            int i = r.nextInt(size());
+            motifs.remove(i);
+            Map<Nucleotide, List<Float>> profile = new Dna(motifs).profile(k);
+            double[] p = at(i).kmerStream(k).mapToDouble(kmer -> kmer.probability(profile)).toArray();
+            motifs.add(i, at(i).kmer(Util.random(r, p), k));
+            float score = new Dna(motifs).score(k);
+            if (score < bestScore) {
+                bestMotifs = new ArrayList<>(motifs);
+                bestScore = score;
+            }
+        }
+        return new Dna(bestMotifs);
     }
 
     @Override

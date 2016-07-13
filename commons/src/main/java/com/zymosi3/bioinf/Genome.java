@@ -355,20 +355,20 @@ public class Genome {
         return new ClumpsWithMismatchesAndReverse().apply(this).apply(k).apply(l).apply(t).apply(d);
     }
 
-    public Genome mostProbableKmer(Map<Nucleotide, List<Double>> profile, int k) {
+    public Genome mostProbableKmer(Map<Nucleotide, List<Float>> profile, int k) {
         return kmerStream(k).
                 map(kmer -> new Object[]{kmer, kmer.probability(profile)}).
-                reduce((o1, o2) -> (((double) o1[1]) < ((double) o2[1])) ? o2 : o1).
+                reduce((o1, o2) -> (((float) o1[1]) < ((Float) o2[1])) ? o2 : o1).
                 map(a -> (Genome) a[0]).
                 orElse(null);
     }
 
-    public double probability(Map<Nucleotide, List<Double>> profile) {
+    public float probability(Map<Nucleotide, List<Float>> profile) {
         return IntStream.range(0, size()).
                 mapToObj(i -> new Object[]{i, at(i)}).
                 map(a -> profile.get(a[1]).get((int) a[0])).
                 reduce((d1, d2) -> d1 * d2).
-                orElse(0.0);
+                orElse(0.0f);
     }
 
     //    PatternToNumber(Pattern)
